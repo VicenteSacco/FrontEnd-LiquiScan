@@ -3,23 +3,25 @@ import { Colors } from '@/constants/Colors';
 import { useState } from 'react';
 type Variant = 'default' | 'search' | 'password' | 'mail';
 interface InputProps {
-    placeholder: string,
-    variant?: Variant,
-    value: string,
-    onChange?: (text: string) => void,
+    placeholder: string;
+    variant?: Variant;
+    value: string;
+    onChange?: (text: string) => void;
+    style?: any;
 }
 export const Input = ({
     variant = 'default',
     value,
     placeholder,
     onChange,
+    style,
 }: InputProps) => {
     const [isPasswordVisible, setIsPasswordVisible] = useState(false);
 
     const isPassword = variant === 'password';
     const isSearch = variant === 'search';
     return (
-        <View style={styles.container}>
+        <View style={[styles.container, style]}>
             <TextInput
                 style={styles.text}
                 placeholder={placeholder}
