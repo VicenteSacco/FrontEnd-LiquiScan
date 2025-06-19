@@ -1,3 +1,4 @@
+import React, { useRef, useState } from 'react';
 import { TragosListItem } from '@/components/TragosListItem';
 import { Colors } from '@/constants/Colors';
 import { Drink } from '@/types/drinks';
@@ -11,6 +12,8 @@ interface ListProps {
 }
 
 export const TragosList = ({ title, selectedList, setSelected, list }: ListProps) => {
+    const scrollRef = useRef<ScrollView>(null);
+    const [offset, setOffset] = useState(0);
     const addItemToSelected = (item: Drink) => {
         const exists = selectedList.includes(item.id);
         if (!exists) {
@@ -24,7 +27,19 @@ export const TragosList = ({ title, selectedList, setSelected, list }: ListProps
 
     return (
         <View style={styles.container}>
-            <ScrollView horizontal style={styles.scrollContainer}>
+            <ScrollView
+                ref={scrollRef}
+                horizontal
+                style={styles.scrollContainer}
+                onScroll={(e) => setOffset(e.nativeEvent.contentOffset.x)}
+                scrollEventThrottle={16}
+                onWheel={(e) => {
+                    e.preventDefault();
+                    const newX = offset + e.deltaY;
+                    scrollRef.current?.scrollTo({ x: newX, animated: false });
+                }}
+                showsVerticalScrollIndicator={false}
+            >
                 <View style={styles.innerContainer}>
                     {list.map((item: any) => (
                         <TouchableOpacity
