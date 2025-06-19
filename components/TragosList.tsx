@@ -95,7 +95,7 @@ const styles = StyleSheet.create({
     },
     searchInput: {
         width: 250,
-        alignSelf: 'center',
+        alignSelf: 'flex-start',
         marginBottom: 10,
     },
     innerContainer: {
