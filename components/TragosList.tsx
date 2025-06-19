@@ -1,5 +1,6 @@
 import React, { useRef, useState } from 'react';
 import { TragosListItem } from '@/components/TragosListItem';
+import { Input } from '@/components/Input';
 import { Colors } from '@/constants/Colors';
 import { Drink } from '@/types/drinks';
 import { StyleSheet, Text, TouchableOpacity, View, ScrollView } from 'react-native';
@@ -14,6 +15,7 @@ interface ListProps {
 export const TragosList = ({ title, selectedList, setSelected, list }: ListProps) => {
     const scrollRef = useRef<ScrollView>(null);
     const [offset, setOffset] = useState(0);
+    const [search, setSearch] = useState('');
     const addItemToSelected = (item: Drink) => {
         const exists = selectedList.includes(item.id);
         if (!exists) {
@@ -27,6 +29,13 @@ export const TragosList = ({ title, selectedList, setSelected, list }: ListProps
 
     return (
         <View style={styles.container}>
+            <Input
+                placeholder="Buscar..."
+                variant="search"
+                value={search}
+                onChange={setSearch}
+                style={styles.searchInput}
+            />
             <ScrollView
                 ref={scrollRef}
                 horizontal
@@ -35,24 +44,29 @@ export const TragosList = ({ title, selectedList, setSelected, list }: ListProps
                 scrollEventThrottle={16}
                 onWheel={(e) => {
                     e.preventDefault();
+                    e.stopPropagation();
                     const newX = offset + e.deltaY;
                     scrollRef.current?.scrollTo({ x: newX, animated: false });
                 }}
                 showsVerticalScrollIndicator={false}
             >
                 <View style={styles.innerContainer}>
-                    {list.map((item: any) => (
-                        <TouchableOpacity
-                            key={item.id}
-                            onPress={() => addItemToSelected(item)}
-                        >
+                    {list
+                        .filter((item: Drink) =>
+                            item.nombre.toLowerCase().includes(search.toLowerCase())
+                        )
+                        .map((item: any) => (
+                            <TouchableOpacity
+                                key={item.id}
+                                onPress={() => addItemToSelected(item)}
+                            >
                             <TragosListItem
                                 title={item.nombre}
                                 selected={selectedList.some(drink => drink === item.id)}
                                 path={item.imagen}
                             />
                         </TouchableOpacity>
-                    ))}
+                        ))}
                 </View>
             </ScrollView>
         </View>
@@ -78,6 +92,11 @@ const styles = StyleSheet.create({
     },
     scrollContainer: {
         paddingInline: 40,
+    },
+    searchInput: {
+        width: 250,
+        alignSelf: 'center',
+        marginBottom: 10,
     },
     innerContainer: {
         display: 'flex',
