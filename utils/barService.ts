@@ -90,3 +90,10 @@ export const fetchBarraPorLista = async (idLista: number): Promise<Barra> => {
     if (!response.ok) throw new Error('Error al obtener barra vinculada a la lista');
     return await response.json();
 };
+
+// NUEVO: fetch barras por administrador usando barra-por-idadmin endpoint
+export const fetchBarrasPorAdmin = async (idAdmin: number): Promise<Barra[]> => {
+    const response = await fetch(`${API_URL}/barra/${idAdmin}/filtrar_barra/`);
+    if (!response.ok) throw new Error('Error al obtener barras por administrador');
+    return await response.json();
+};

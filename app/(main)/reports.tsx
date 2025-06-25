@@ -7,7 +7,7 @@ import { ReportCalendar } from '@/components/ReporteCalendar';
 import { Colors } from '@/constants/Colors';
 
 import {getAdminId} from '@/utils/auth'
-import { fetchListasPorAdministrador, createBarraValidando } from '@/utils/barService';
+import { fetchBarrasPorAdmin, createBarraValidando } from '@/utils/barService';
 import { fetchAlcoholes } from '@/utils/listsService';
 import { getReportesPorAdministrador, getInventariosPorReporte } from '@/utils/ReporteService';
 
@@ -50,13 +50,7 @@ export default function Reports() {
           console.warn('No se encontró idadministrador en AsyncStorage');
           return;
         }
-        const listas = await fetchListasPorAdministrador(idAdministrador);
-        const barras = listas.map((lista: any) => ({
-          id: lista.id,
-          nombrebarra: lista.nombrelista,
-          idadministrador: idAdministrador,
-          idlista: lista.id,
-        }));
+        const barras = await fetchBarrasPorAdmin(idAdministrador);
         setBars(barras);
       } catch (error) {
         console.error(error);
@@ -70,8 +64,8 @@ export default function Reports() {
     setSelectedDate(null);
     setLoading(true);
     try {
-      const idAdministrador = await getAdminId();
-      const reportes = await getReportesPorAdministrador(idAdministrador);
+      if (!selectedBar) return;
+      const reportes = await getReportesPorAdministrador(selectedBar);
       const fechas = reportes.map((r) => r.fecha);
       setDaysWithData(fechas);
     } catch (err) {
@@ -80,13 +74,13 @@ export default function Reports() {
     } finally {
       setLoading(false);
     }
-  };
+  }; 
 
   const loadReportDetails = async (date: Date) => {
     if (!selectedBar) return;
     setLoading(true);
     try {
-      const idAdministrador = await getAdminId(); // ✅ Aquí obtienes el ADMIN ID correcto
+      const idAdministrador = await getAdminId(); 
       const reportes = await getReportesPorAdministrador(idAdministrador)
       const dateStr = getFormattedDateKey(date);
       const reporte = reportes.find((r) => r.fecha === dateStr);
@@ -126,9 +120,9 @@ export default function Reports() {
       <View style={styles.pickerContainer}>
         <Picker
           selectedValue={selectedBar}
-          onValueChange={(value: number | null) => {
+          onValueChange={(value: number) => {
             setSelectedBar(value);
-            if (value !== null) loadReportsForBar(value);
+            if (value !== null) loadReportsForBar();
           }}
           style={{ color: Colors.dark.text }}
         >
