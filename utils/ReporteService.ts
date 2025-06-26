@@ -1,3 +1,5 @@
+import * as WebBrowser from 'expo-web-browser';
+
 import API_URL from "@/constants/Api";
 
 export interface InventarioFinal {
@@ -56,5 +58,16 @@ export const crearReporte = async (nuevoReporte: {
     body: JSON.stringify(nuevoReporte),
   });
   if (!response.ok) throw new Error("Error al crear el reporte");
+  return await response.json();
+};
+
+export async function handleDownloadExcel(reporteId: number) {
+  const url = `${API_URL}/descargar_reporte/${reporteId}/`;
+  await WebBrowser.openBrowserAsync(url);
+}
+
+export const getReportesPorBarra = async (barId: number): Promise<Reporte[]> => {
+  const response = await fetch(`${API_URL}/reportes/${barId}/por_barra/`);
+  if (!response.ok) throw new Error("Error al obtener reportes por barra");
   return await response.json();
 };

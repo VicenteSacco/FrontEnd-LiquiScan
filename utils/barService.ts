@@ -1,13 +1,13 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import API_URL from '@/constants/Api';
+import { Barra } from '@/types/Barras';
 
-
-interface Barra {
+/*interface Barra {
     id?: number;        // opcional cuando estás creando
     nombrebarra: string;
     idadministrador: number;
     idlista: number;
-}
+}*/
 
 interface Lista {
     id: number;

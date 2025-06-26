@@ -9,15 +9,10 @@ import { Colors } from '@/constants/Colors';
 import {getAdminId} from '@/utils/auth'
 import { fetchBarrasPorAdmin, createBarraValidando } from '@/utils/barService';
 import { fetchAlcoholes } from '@/utils/listsService';
-import { getReportesPorAdministrador, getInventariosPorReporte } from '@/utils/ReporteService';
+import { getReportesPorAdministrador, getInventariosPorReporte, getReportesPorBarra } from '@/utils/ReporteService';
 
 import { Pin } from '@/components/Pin';
-interface Barra {
-  id: number;
-  nombrebarra: string;
-  idadministrador: number;
-  idlista: number;
-}
+import { Barra } from '@/types/Barras';
 
 interface Reporte {
   id: number;
@@ -41,6 +36,8 @@ export default function Reports() {
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [reportData, setReportData] = useState<AlcoholUsage[]>([]);
   const [loading, setLoading] = useState(false);
+  const [selectedReportId, setSelectedReportId] = useState<number | null>(null);
+  const [barReportes, setBarReportes]=useState<Reporte[]>([]);
 
   useEffect(() => {
     const fetchBars = async () => {
@@ -65,30 +62,36 @@ export default function Reports() {
     setLoading(true);
     try {
       if (!selectedBar) return;
-      const reportes = await getReportesPorAdministrador(selectedBar);
-      const fechas = reportes.map((r) => r.fecha);
+      const reportes = await getReportesPorBarra(selectedBar);
+      const fechas = reportes.map((r) => r.fecha.slice(0, 10));
       setDaysWithData(fechas);
+      setBarReportes(reportes); 
     } catch (err) {
       console.error(err);
       setDaysWithData([]);
     } finally {
       setLoading(false);
     }
-  }; 
+  };
 
   const loadReportDetails = async (date: Date) => {
     if (!selectedBar) return;
     setLoading(true);
     try {
-      const idAdministrador = await getAdminId(); 
-      const reportes = await getReportesPorAdministrador(idAdministrador)
+      const idAdministrador = await getAdminId();
+      const reportes = await getReportesPorAdministrador(idAdministrador);
       const dateStr = getFormattedDateKey(date);
-      const reporte = reportes.find((r) => r.fecha === dateStr);
-      if (!reporte) return;
-
+      console.log("Reportes disponibles:", reportes.map(r => r.fecha));
+      console.log("Buscando fecha:", dateStr);
+      const reporte = barReportes.find((r) => r.fecha.slice(0, 10) === dateStr);
+      if (!reporte){
+        console.warn("No se encontró reporte para la fecha:", dateStr);
+        return;
+      } 
+        setSelectedReportId(reporte.id);
+        
       const inventario = await getInventariosPorReporte(reporte.id);
       const alcoholes: Alcohol[] = await fetchAlcoholes();
-
       const fullReport: AlcoholUsage[] = inventario.map((item) => {
         const alcoholInfo = alcoholes.find((a) => a.id === item.alcohol);
         return {
@@ -149,7 +152,7 @@ export default function Reports() {
 
       {/* Reporte del día */}
       {selectedDate && reportData.length > 0 && (
-        <DailyReportSummary date={selectedDate} data={reportData} />
+        <DailyReportSummary date={selectedDate} data={reportData} reporteId={selectedReportId!} />
       )}
     </ScrollView>
   );

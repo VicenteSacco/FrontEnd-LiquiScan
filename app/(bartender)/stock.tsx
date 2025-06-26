@@ -80,6 +80,64 @@ export default function Stock() {
     };
 
     const handleSaveData = async () => {
+  try {
+    const payload = {
+      fecha: new Date().toISOString().slice(0, 10),
+      bartender: "NOMBRE_BARTENDER",
+      idbarra: barId,
+      barra: barTitle, // Solo incluye esto si ya lo agregaste al modelo correctamente
+      inventarios: stock.map(item => ({
+        alcohol: item.id,
+        stock_normal: Math.max(0, item.manualStock),
+        stock_ia: item.aiStock,
+      })),
+    };
+
+    console.log("Payload a enviar:", JSON.stringify(payload, null, 2)); // 👈 Este es el log importante
+
+    const responseReporte = await fetch(`${API_URL}/reportes/`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+
+    if (!responseReporte.ok) {
+      const errorData = await responseReporte.json().catch(() => ({}));
+      console.error("Error en el POST /reportes/:", responseReporte.status, errorData);
+      throw new Error("Error al crear reporte");
+    }
+
+    console.log("Reporte creado correctamente");
+
+    // PUTs para actualizar stock de alcohol
+    await Promise.all(
+      stock.map(async (item) => {
+        const responseAlcohol = await fetch(`${API_URL}/alcohol/${item.id}/`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            stock_normal: Math.max(0, item.manualStock),
+            stock_ia: item.aiStock
+          })
+        });
+
+        if (!responseAlcohol.ok) {
+          console.error(`Error actualizando alcohol ${item.id}`);
+        }
+      })
+    );
+
+    console.log("Stock actualizado correctamente");
+    router.back();
+
+  } catch (err) {
+    console.error("Excepción en handleSaveData:", err);
+  }
+};
+
+
+//en caso de errores usar este codigo!
+    /*const handleSaveData = async () => {
     try {
         // Primero creamos el reporte
         const responseReporte = await fetch(`${API_URL}/reportes/`, {
@@ -89,14 +147,14 @@ export default function Stock() {
             fecha: new Date().toISOString().slice(0, 10),
             bartender: "NOMBRE_BARTENDER",
             idbarra: barId,
-            barra: barTitle,
+            barra: "NOMBRE_BARRA",
             inventarios: stock.map(item => ({
                 alcohol: item.id,
                 stock_normal: Math.max(0, item.manualStock),
                 stock_ia: item.aiStock,
             })),
         }),
-    });
+    }); 
 
     if (!responseReporte.ok) throw new Error("Error al crear reporte");
 
@@ -105,7 +163,6 @@ export default function Stock() {
         if (!responseReporte.ok) throw new Error("Error al crear reporte");
         console.log("Reporte creado correctamente");
 
-        // Ahora actualizamos el stock de cada bebida individualmente (PUT)
         await Promise.all(
             stock.map(async (item) => {
                 const responseAlcohol = await fetch(`${API_URL}/alcohol/${item.id}/`, {
@@ -129,7 +186,7 @@ export default function Stock() {
     } catch (err) {
         console.error(err);
     }
-};
+};*/
 
     return (
         <>

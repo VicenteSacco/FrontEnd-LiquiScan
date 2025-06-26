@@ -1,5 +1,7 @@
 import { Colors } from '@/constants/Colors';
 import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import {handleDownloadExcel} from '@/utils/ReporteService';
+import { Button } from '@/components/Button';
 
 export type AlcoholUsage = {
   name: string;
@@ -13,9 +15,10 @@ export type AlcoholUsage = {
 type Props = {
   date: Date;
   data: AlcoholUsage[];
+  reporteId: number;
 };
 
-export function DailyReportSummary({ date, data }: Props) {
+export function DailyReportSummary({ date, data,reporteId }: Props) {
   const formattedDate = date.toLocaleDateString('es-CL', {
     weekday: 'long',
     year: 'numeric',
@@ -65,7 +68,7 @@ export function DailyReportSummary({ date, data }: Props) {
         {/* SIEMPRE visible */}
         <View style={styles.buttonWrapper}>
         <TouchableOpacity style={styles.excelButton} onPress={() => {}}>
-            <Text style={styles.excelButtonText}>Generar reporte Excel</Text>
+            <Button title="Descargar Excel" onPress={() => handleDownloadExcel(reporteId)} />
         </TouchableOpacity>
         </View>
     </View>
